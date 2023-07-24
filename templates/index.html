@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <title>Weather Forcasting</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <nav style="position: fixed;" class="gradient-background navy navbar bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="title navbar-brand">Weather Forcast</a>
+            <div>
+                <a style="color: white;" class="nav-link active" aria-current="page" href="{{ url_for('home') }}">Home</a>
+            </div>
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search">
+                <button class="btn btn-warning" type="submit">Search</button>
+            </form>
+        </div>
+      </nav>
+</head>
+
+<body>
+    <br><br>
+        {% if have_details == False: %}
+        <section class="container">
+            <br><br>   
+            <h2 style="width:100%; margin-left: 10px; text-align: center;">Enter the details below</h2>
+            <hr><br> 
+            <form action='/weather_report' method="post" style="margin-left: 500px;">
+                <h3>Latitude and Longitude</h3>
+                <label>Get latitude and longitude from <a href="https://www.latlong.net/">here</a></label><br><br>
+                <input name="latlong" placeholder="-25.480877,-49.304424">
+
+                <br><br><br><br>
+
+                <h3>Starting and Ending dates</h3>
+                <div>
+                    <label style="margin-left: 5px; width: 140px;">Starting</label>
+                    <label>Ending</label>
+                </div>
+                <div>
+                    <input type="date" name="starting_date">
+                    <input type="date" name="ending_date">
+                </div>
+
+                <br><br>
+                <input type="submit" class="btn btn-outline-primary" style="margin-left: 90px">
+            </form>
+        
+        {% else: %}
+        <section>
+            <center>
+            <br><br>
+            <h2>Weather Report</h2>
+            <div>
+                <a href="{{ url_for('function1') }}"><button class="btn btn-danger" style="margin-left: 605px;">Temperature</button></a>
+                <a href="{{ url_for('function2') }}"><button class="btn btn-outline-info" style="padding: 5px;">Precipitation</button></a>
+                <a href="{{ url_for('function3') }}"><button class="btn btn-info" style="padding: 5px;">Wind Speed</button></a>
+            </div>
+            <hr><br> 
+            {% if var == 1: %}
+                {% for temp in temperature: %}
+                    <img width="75" height="auto" src="{{ url_for('static', filename='sun.png') }}">
+                    <label>Date: {{temp['date']}}</label><br>
+                    <label>Temperature: {{temp['value']}}</label>
+                    <hr><br>
+                {% endfor %}
+            {% elif var == 2: %}
+                {% for precip in precipitation: %}
+                    <img width="75" height="auto" src="{{ url_for('static', filename='rain.png') }}">   
+                    <label>Date: {{precip['date']}}</label><br>
+                    <label>Precipitation: {{precip['value']}}</label>
+                    <hr><br>
+                {% endfor %}
+            {% else:%}
+                {% for speed in wind_speed: %}
+                    <img width="75" height="auto" src="{{ url_for('static', filename='wind.png') }}">
+                    <label>Date: {{speed['date']}}</label><br>
+                    <label>Wind Speed: {{speed['value']}}</label>
+                    <hr><br>
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+            </center>
+        </form>
+
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+</body>
+
+</html>
