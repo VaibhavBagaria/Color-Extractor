@@ -1,22 +1,20 @@
 from flask import Flask, render_template, request, url_for, redirect
-import requests
 from tkinter import messagebox
 from flask_bootstrap import Bootstrap
+from PIL import Image
+import urllib
+from werkzeug.utils import secure_filename
+import os
+
 
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 Bootstrap(app)
 
-url="https://api.meteomatics.com/"
-username="none_bagaria"
-password="Ogd10Z1d1U"
 
 have_details=False
-var=1
-temperature=[]
-precipitation=[]
-wind_speed=[]
+url_link=True
 @app.route("/")
 def home():
     global have_details
@@ -24,83 +22,36 @@ def home():
     
     return render_template("index.html", have_details=have_details)
 
-@app.route('/weather_report', methods=['POST'])
-def weather_report():
-    global have_details, temperature, precipitation, wind_speed
+@app.route('/extract_color', methods=['GET','POST'])
+def extract_color():
+    global have_details, url_link
     have_details=True
 
-    # latlong=request.form['latlong']
-    # starting_date=request.form['starting_date']
-    # ending_date=request.form['ending_date']
-    
-    latlong="-25.480877,-49.304424"
-    starting_date="2023-07-23"
-    ending_date="2023-07-26"
+    img_url=request.form['img_url']
+    if img_url == "":
+        url_link=False
+        image_file=request.files['file']
+        if image_file == "":
+            return "Please give a valid image"
+        filename=secure_filename(image_file.filename)
+        image_file.save(os.path.join('static/',filename))
+        image=Image.open(image_file)
+        
+    else:
+        url_link=True
+        image = Image.open(urllib.request.urlopen(img_url))
 
-    response=requests.get(f"{url}{starting_date}T00:00:00Z--{ending_date}T00:00:00Z:PT1H/t_2m:C,precip_1h:mm,wind_speed_10m:ms/{latlong}/json", 
-                          auth=(username, password)
-                          ).json()
-    var2=1
-    for data in response['data'][0]["coordinates"][0]['dates']:
-        scraped_data=[]
-        for tuples in data.items():
-            scraped_data.append(tuples[1])
-            if var2==2:
-                date1=scraped_data[0].split('T')[0]
-                date2=scraped_data[0].split('T')[1].split(':00Z')[0]
-                update_date=f"{date1} {date2}h"
-                temperature.append({'date':update_date,'value':scraped_data[1]})
-                scraped_data=[]
-                var2=0
-            var2+=1
-    
-    var2=1
-    for data in response['data'][0]["coordinates"][0]['dates']:
-        scraped_data=[]
-        for tuples in data.items():
-            scraped_data.append(tuples[1])
-            if var2==2:
-                date1=scraped_data[0].split('T')[0]
-                date2=scraped_data[0].split('T')[1].split(':00Z')[0]
-                update_date=f"{date1} {date2}h"
-                precipitation.append({'date':update_date,'value':scraped_data[1]})
-                scraped_data=[]
-                var2=0
-            var2+=1
-       
-    var2=1
-    for data in response['data'][0]["coordinates"][0]['dates']:
-        scraped_data=[]
-        for tuples in data.items():
-            scraped_data.append(tuples[1])
-            if var2==2:
-                date1=scraped_data[0].split('T')[0]
-                date2=scraped_data[0].split('T')[1].split(':00Z')[0]
-                update_date=f"{date1} {date2}h"
-                wind_speed.append({'date':update_date,'value':scraped_data[1]})
-                scraped_data=[]
-                var2=0
-            var2+=1
-    
-    return render_template("index.html", have_details=have_details, temperature=temperature, precipitation=precipitation, wind_speed=wind_speed, var=var)
 
-@app.route('/1')   
-def function1():
-    global var
-    var=1
-    return render_template("index.html", have_details=have_details, temperature=temperature, precipitation=precipitation, wind_speed=wind_speed, var=var)
+    reduced = image.convert("P", palette=Image.Palette.WEB) # convert to web palette (216 colors)
+    palette = reduced.getpalette() # get palette as [r,g,b,r,g,b,...]
+    palette = [tuple(palette[3*n:3*n+3]) for n in range(256)] # group 3 by 3 = [[r,g,b],[r,g,b],...]
+    color_count = [(n, palette[m]) for n,m in reduced.getcolors()]
+
+    color_count.sort()
+    top_10_extracted_colors=color_count[::-1][:10]
     
-@app.route('/2')   
-def function2():
-    global var
-    var=2
-    return render_template("index.html", have_details=have_details, temperature=temperature, precipitation=precipitation, wind_speed=wind_speed, var=var)
-    
-@app.route('/3')   
-def function3():
-    global var
-    var=3
-    return render_template("index.html", have_details=have_details, temperature=temperature, precipitation=precipitation, wind_speed=wind_speed, var=var)
+    return render_template("index.html", have_details=have_details, colors=top_10_extracted_colors, img_url=img_url, url_link=url_link, filename=filename)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

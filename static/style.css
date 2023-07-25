@@ -23,7 +23,7 @@ div{
 }
 
 .gradient-background {
-    background: linear-gradient(300deg, #8800ff, #0040ff, #14d5e6);
+    background: linear-gradient(300deg, #ff0000, #f2ff00, #14e622, #14d5e6, #0008ff, #a200ff, #ff00a6);
     background-size: 200% 200%;
     animation: gradient-animation 7s ease infinite;
   }
@@ -38,13 +38,17 @@ div{
     }
 
 100% {
-    background-position: 0% 50%;
+    background-position: 100% 50%;
     }
 }  
 
-.carousel {
-    margin-bottom: 4rem;
-}
-.carousel {
-    position: relative;
+.center{
+    margin: auto;
+    width: 50%;
+    border: 3px solid black;
+    padding: 10px;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center
 }
